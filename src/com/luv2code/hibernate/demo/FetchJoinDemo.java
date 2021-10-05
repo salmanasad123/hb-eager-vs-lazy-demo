@@ -6,10 +6,11 @@ import com.luv2code.hibernate.demo.entity.InstructorDetail;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.Query;
 
 import java.util.List;
 
-public class EagerLazyDemo {
+public class FetchJoinDemo {
 
     public static void main(String[] args) {
 
@@ -27,10 +28,25 @@ public class EagerLazyDemo {
         try {
             // start a session
             session.beginTransaction();
-            
+
+            // Hibernate Query with HQL
+
             // get the instructor from database using ID
             int theId = 1;
-            Instructor instructor = session.get(Instructor.class, theId);
+
+            // when this query is executed it will load the instructor and all its courses all at once
+            // from database into the memory
+            // :theInstructorId this is the parameter that we set later using query.setParameter
+            Query<Instructor> query = session.createQuery("select i from instructor i "
+                            + "JOIN FETCH i.courses "
+                            + "where i.id:theInstructorId",
+                    Instructor.class);
+
+            // set parameter on query
+            query.setParameter("theInstructorId", theId);
+
+            // execute the query and save the result into instructor object
+            Instructor instructor = query.getSingleResult();
 
             // get instructor courses using the getter method, at this point everything is loaded the instructor
             // and all of his courses are loaded in memory
